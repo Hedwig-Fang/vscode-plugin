@@ -11,7 +11,6 @@
 		"body": [
 			"<!--",
 			" * @Description ${1}",
-			" * @Author fsy",
 			" * @Date $CURRENT_YEAR/$CURRENT_MONTH/$CURRENT_DATE $CURRENT_HOUR:$CURRENT_MINUTE:$CURRENT_SECOND",
 			"-->",
 			"<template>",
@@ -35,7 +34,7 @@
 			"  },"	,	
 			"};",	
 			"</script>",
-			"<style scoped lang=\"scss\">",
+			"<style scoped lang=\"less\">",
 			".${TM_FILENAME_BASE/(^[A-Z][a-z]*|[a-z])([A-Z])?/${1:/downcase}${2:+-}${2:/downcase}/g} {",
 			"${3}",
 			"}",

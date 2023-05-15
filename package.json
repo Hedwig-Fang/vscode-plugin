@@ -7,10 +7,55 @@
   "engines": {
     "vscode": "^1.78.0"
   },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/glob": "^7.2.0",
+    "@types/mocha": "^9.1.0",
+    "@types/node": "14.x",
+    "@types/parse5": "^6.0.3",
+    "@types/vscode": "^1.65.0",
+    "@typescript-eslint/eslint-plugin": "^5.12.1",
+    "@typescript-eslint/parser": "^5.12.1",
+    "@vscode/test-electron": "^2.1.2",
+    "eslint": "^8.9.0",
+    "glob": "^7.2.0",
+    "mocha": "^9.2.1",
+    "typescript": "^4.5.5"
+  },
   "categories": [
     "Snippets"
   ],
+  "activationEvents": [
+    "onCommand:vue-auto-atomic-css",
+    "onLanguage:vue"
+  ],
+  "main": "./out/extension.js",
   "contributes": {
+    "commands": [
+      {
+        "command": "vscode-plugin-demo.helloWorld",
+        "title": "Hello World"
+      }
+    ],
+    "languages": [
+      {
+        "id": "vue",
+        "aliases": [
+          "Vue",
+          "vue"
+        ],
+        "extensions": [
+          ".vue"
+        ]
+      }
+    ],
     "snippets": [
       {
         "language": "javascript",
@@ -26,5 +71,8 @@
     "type": "git",
     "url": "http://192.168.0.2:8866/Internet-Development-Department/HwVueSnippets.git"
   },
-  "homepage": "http://192.168.0.2:8866/Internet-Development-Department/HwVueSnippets/blob/main/README.md"
+  "homepage": "http://192.168.0.2:8866/Internet-Development-Department/HwVueSnippets/blob/main/README.md",
+  "dependencies": {
+    "typescript": "^4.5.5"
+  }
 }
