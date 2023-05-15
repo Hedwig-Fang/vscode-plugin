@@ -1,0 +1,21 @@
+{
+  "name": "hwVueSnippet",
+  "displayName": " HwVueSnippet",
+  "description": "一个vue3的代码片段",
+  "version": "0.0.1",
+  "publisher": "hedwigFang",
+  "engines": {
+    "vscode": "^1.78.0"
+  },
+  "categories": [
+    "Snippets"
+  ],
+  "contributes": {
+    "snippets": [
+      {
+        "language": "javascript",
+        "path": "./snippets/snippets.code-snippets"
+      }
+    ]
+  }
+}
