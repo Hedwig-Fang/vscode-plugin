@@ -17,5 +17,10 @@
         "path": "./snippets/snippets.code-snippets"
       }
     ]
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "http://192.168.0.2:8866/Internet-Development-Department/HwVueSnippets.git"
+  },
+  "homepage": "http://192.168.0.2:8866/Internet-Development-Department/HwVueSnippets/blob/main/README.md"
 }
