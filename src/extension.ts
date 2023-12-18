@@ -6,6 +6,10 @@ import {getCSSAST} from './parseCss';
 interface IError {
   message: string
 }
+interface IItem {
+  prop: string;
+  value: string;
+}
 export function activate(context: vscode.ExtensionContext) {
 	const disposable = vscode.commands.registerCommand('vscode-plugin-demo.测试一下', async () => {
 	const currentMainPath = vscode.workspace.workspaceFolders?.map( res =>res.uri.path
@@ -25,27 +29,30 @@ export function activate(context: vscode.ExtensionContext) {
       const selectedFolder = folderPath[0].fsPath;
 
       // 读取文件夹中的所有文件
-      try {
         const files = getFilesInDirectory(selectedFolder);
 				// files.forEach((file: any) => {
 				for (const file of files) {
 					// eslint-disable-next-line @typescript-eslint/no-unused-vars
 					const fileContent = fs.readFileSync(file, 'utf-8');
+          console.log(fileContent, '1111')
+      try {
+
           const list = getCSSAST(fileContent);
           const provider = vscode.languages.registerCompletionItemProvider(
-            ['vue', 'css'],
+            ['vue', 'css', 'less', 'scss'],
             new CustomCompletionItemProvider(list),
             '--'
           );
         
           context.subscriptions.push(provider);
+        } catch (error: unknown) {
+        
+          vscode.window.showErrorMessage(`Error reading files: ${(error as IError).message}`);
+        }
 					
 				}
 				// });
-      } catch (error: unknown) {
-        
-        vscode.window.showErrorMessage(`Error reading files: ${(error as IError).message}`);
-      }
+
     }
 	});
 
@@ -74,8 +81,8 @@ function getFilesInDirectory(directoryPath: string): string[] {
 
 class CustomCompletionItemProvider implements vscode.CompletionItemProvider {
   // 在这里定义你的数组
-  private items: string[];
-  constructor(items: string[]) {
+  private items: IItem[];
+  constructor(items: IItem[]) {
     this.items = items;
   }
   provideCompletionItems(
@@ -85,10 +92,13 @@ class CustomCompletionItemProvider implements vscode.CompletionItemProvider {
     // 获取当前行的文本
     const linePrefix = document.lineAt(position).text.substr(0, position.character);
 
-    // 如果当前行以 '--' 开头，提供代码补全
+
+    // 如果当前行以 '--' -开头，提供代码补全
     if (linePrefix.endsWith('-') || linePrefix.endsWith('hw')) {
-      const items = this.items.map((item) => {
-        const completionItem = new vscode.CompletionItem(item, vscode.CompletionItemKind.Value);
+      const items = this.items.map((item: IItem) => {
+        const completionItem = new vscode.CompletionItem(item.prop, vscode.CompletionItemKind.Variable);
+        completionItem.documentation = new vscode.MarkdownString(`${item.prop}: ${item.value}`);
+        completionItem.detail = item.value;
         return completionItem;
       });
       return items;
@@ -100,5 +110,20 @@ class CustomCompletionItemProvider implements vscode.CompletionItemProvider {
 
 // This method is called when your extension is deactivated
 
+// export class CodelensProvider implements vscode.CodeLensProvider {
+//   private codeLenses: vscode.CodeLens[] = [];
+//   private regex: RegExp;
+//   onDidChangeCodeLenses?: vscode.Event<void> | undefined;
+//   provideCodeLenses(document: vscode.TextDocument, token: vscode.CancellationToken): vscode.ProviderResult<vscode.CodeLens[]> {
+//     const text = document.getText();
+//     let matches;
+//     while ((matches = regex.exec(text)) !== null ) {
 
+//     }
+//   }
+//   resolveCodeLens?(codeLens: vscode.CodeLens, token: vscode.CancellationToken): vscode.ProviderResult<vscode.CodeLens> {
+//     throw new Error('Method not implemented.');
+//   }
+
+// }
 export function deactivate() {}

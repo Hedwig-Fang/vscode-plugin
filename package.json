@@ -29,6 +29,9 @@
     "eslint": "^8.9.0",
     "glob": "^7.2.0",
     "mocha": "^9.2.1",
+    "nanoid": "^3.3.7",
+    "picocolors": "^1.0.0",
+    "source-map-js": "^1.0.2",
     "typescript": "^4.5.5",
     "vitest": "^1.0.4"
   },
@@ -76,7 +79,6 @@
   },
   "homepage": "https://github.com/Hedwig-Fang/vscode-plugin.git/README.md",
   "dependencies": {
-    "autoprefixer": "^10.4.16",
     "postcss": "^8.4.32",
     "typescript": "^4.5.5"
   }
