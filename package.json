@@ -2,7 +2,7 @@
   "name": "hwVueSnippet",
   "displayName": " HwVueSnippet",
   "description": "一个vue3的代码片段",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "publisher": "hedwigFang",
   "engines": {
     "vscode": "^1.78.0"
@@ -13,21 +13,24 @@
     "watch": "tsc -watch -p ./",
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src --ext ts",
-    "test": "node ./out/test/runTest.js"
+    "test": "vitest --run"
   },
   "devDependencies": {
+    "@types/chai": "^4.3.11",
     "@types/glob": "^7.2.0",
     "@types/mocha": "^9.1.0",
-    "@types/node": "14.x",
+    "@types/node": "20.x",
     "@types/parse5": "^6.0.3",
     "@types/vscode": "^1.65.0",
-    "@typescript-eslint/eslint-plugin": "^5.12.1",
-    "@typescript-eslint/parser": "^5.12.1",
+    "@typescript-eslint/eslint-plugin": "^6.14.0",
+    "@typescript-eslint/parser": "^6.14.0",
     "@vscode/test-electron": "^2.1.2",
+    "chai": "^4.3.10",
     "eslint": "^8.9.0",
     "glob": "^7.2.0",
     "mocha": "^9.2.1",
-    "typescript": "^4.5.5"
+    "typescript": "^4.5.5",
+    "vitest": "^1.0.4"
   },
   "categories": [
     "Snippets"
@@ -40,8 +43,8 @@
   "contributes": {
     "commands": [
       {
-        "command": "vscode-plugin-demo.helloWorld",
-        "title": "Hello World"
+        "command": "vscode-plugin-demo.测试一下",
+        "title": "测试一下"
       }
     ],
     "languages": [
@@ -69,10 +72,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "http://192.168.0.2:8866/Internet-Development-Department/HwVueSnippets.git"
+    "url": "https://github.com/Hedwig-Fang/vscode-plugin.git"
   },
-  "homepage": "http://192.168.0.2:8866/Internet-Development-Department/HwVueSnippets/blob/main/README.md",
+  "homepage": "https://github.com/Hedwig-Fang/vscode-plugin.git/README.md",
   "dependencies": {
+    "autoprefixer": "^10.4.16",
+    "postcss": "^8.4.32",
     "typescript": "^4.5.5"
   }
 }
