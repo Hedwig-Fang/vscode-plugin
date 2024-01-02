@@ -2,8 +2,8 @@ import postcss = require("postcss");
 import { PluginCreator } from 'postcss';
 
 interface CssItem {
-prop: string,
-value: string,
+  prop: string,
+  value: string,
 }
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const myPlugin: PluginCreator<{ customOption: string }> = () => {
@@ -50,17 +50,17 @@ export default {
 export const getNewCSSAST = (css: string) => {
 
   const res = postcss([myPlugin]).process(css).sync();
-  const {lastPlugin: cssItems } = res;
+  const { lastPlugin: cssItems } = res;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   // const cssItems = (res as any).cssItems as CssItem[];
-  
+
   return cssItems
 }
 // 先写死 因为结构都是一样的 后面再优化
 export const getCSSAST = (css: string) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const res = postcss.parse(css) as any;
-   const csssNodes = res.nodes[0].nodes;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const res = postcss.parse(css) as any;
+  const csssNodes = res.nodes[0].nodes;
   //  const propList = csssNodes.map((res: any)=> res.prop)
   return csssNodes;
 }
