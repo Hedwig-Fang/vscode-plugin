@@ -1,26 +1,30 @@
 import * as vscode from 'vscode';
 import path = require('path');
 import fs = require('fs');
-import { getCSSAST } from './parseCss';
+import { getCSSAST, getCssValue } from './parseCss';
 import { getFullFilePath } from './utils'
 // import postcss = require('postcss');
-interface IError {
-  message: string
-}
 interface IItem {
   prop: string;
   value: string;
 }
+interface IMap {
+  [key:string]: string
+}
+const cssMap:IMap = {};
 
-function setCss(selectedFolder: string, context: vscode.ExtensionContext) {
+function setCss(selectedFolder: string, context: vscode.ExtensionContext, ASTFun = getCSSAST) {
   // 读取文件夹中的所有文件
   const files = getFilesInDirectory(selectedFolder);
   for (const file of files) {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const fileContent = fs.readFileSync(file, 'utf-8');
-    try {
 
-      const list = getCSSAST(fileContent);
+      const list = ASTFun(fileContent);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      list.forEach((item: any)=> {
+        Reflect.set(cssMap, item.prop, item.value);
+      })
       const provider = vscode.languages.registerCompletionItemProvider(
         ['vue', 'css', 'less', 'scss'],
         new CustomCompletionItemProvider(list),
@@ -28,10 +32,7 @@ function setCss(selectedFolder: string, context: vscode.ExtensionContext) {
       );
 
       context.subscriptions.push(provider);
-    } catch (error: unknown) {
 
-      vscode.window.showErrorMessage(`Error reading files: ${(error as IError).message}`);
-    }
 
   }
 }
@@ -39,14 +40,17 @@ function setCss(selectedFolder: string, context: vscode.ExtensionContext) {
 export function activate(context: vscode.ExtensionContext) {
   // 获取当前工作区的配置
   const config = vscode.workspace.getConfiguration('hwPlugin');
-  const localesPaths: string[] = config.
-  get('localesPaths') || [];
+  const localesPaths: string[] = config.get('localesPaths') || [];
   localesPaths.forEach((res) => {
     const path = getFullFilePath(res) || '';
     setCss(path, context)
 
   })
-
+  const globCssList: string[] = config.get('globalsCss') || [];
+  globCssList.forEach((res) => {
+    const path = getFullFilePath(res) || '';
+    setCss(path, context)
+  })
   const disposable = vscode.commands.registerCommand('vscode-plugin-demo.测试一下', async () => {
     const currentMainPath = vscode.workspace.workspaceFolders?.map(res => res.uri.path
     )[0];
@@ -94,6 +98,7 @@ function getFilesInDirectory(directoryPath: string): string[] {
 class CustomCompletionItemProvider implements vscode.CompletionItemProvider {
   // 在这里定义你的数组
   private items: IItem[];
+  
   constructor(items: IItem[]) {
     this.items = items;
   }
@@ -103,14 +108,12 @@ class CustomCompletionItemProvider implements vscode.CompletionItemProvider {
   ): vscode.CompletionItem[] | Thenable<vscode.CompletionItem[]> {
     // 获取当前行的文本
     const linePrefix = document.lineAt(position).text.substr(0, position.character);
-    console.log(linePrefix, 'line')
-
-
     // 如果当前行以 '--' -开头，提供代码补全ar
     if (linePrefix.endsWith('-') || linePrefix.endsWith('var(')) {
       const items = this.items.map((item: IItem) => {
         const completionItem = new vscode.CompletionItem(item.prop, vscode.CompletionItemKind.Variable);
-        completionItem.documentation = new vscode.MarkdownString(`${item.prop}: ${item.value}`);
+        completionItem.documentation = new vscode.MarkdownString(`${item.prop}: 
+        ${getCssValue(item.value, cssMap)}`);
         completionItem.detail = item.value;
         return completionItem;
       });

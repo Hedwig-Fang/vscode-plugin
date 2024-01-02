@@ -1,5 +1,6 @@
 import {test, expect} from 'vitest';
-import { getCSSAST, getNewCSSAST } from '../src/parseCss'
+import { getCSSAST, getNewCSSAST, getCssValue} from '../src/parseCss'
+// import { getCssValue} from '../src/utils.ts'
 const cssTest =  `
 .hw-font-12-ch-reg{
   font-size: var(--font-base-size-12);
@@ -13,7 +14,6 @@ const cssTest =  `
   font-weight: var(--font-base-weight-400);
    line-height: var(--font-base-height-22);
  }
- hw
  .hw-font-16-ch-reg{
   font-size: var(--font-base-size-16);
   color: var(--text-main-color);
@@ -139,4 +139,13 @@ test('init', ()=> {
 test.only('第二次', ()=>{
   const res = getNewCSSAST(cssTest) as any;
   console.log(res)
+})
+const cssMap = {
+  '--a': 'var( --b)',
+  '--b': 'var( --c)',
+  '--c': '2322'
+}
+test.only('测试', () => {
+ const res = getCssValue('var(--a)', cssMap)
+ console.log(res, 'aaa')
 })

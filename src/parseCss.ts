@@ -16,11 +16,11 @@ const myPlugin: PluginCreator<{ customOption: string }> = () => {
       root.walkRules(rule => {
         // 输出规则的选择器
         // console.log('Selector:', rule.selector);
-        const selector = rule.selector;
+        // const selector = rule.selector;
         // 遍历规则的每个声明
         rule.walkDecls(decl => {
-          const property = decl.prop;
-          const value = decl.value;
+          // const property = decl.prop;
+          // const value = decl.value;
           // 输出声明的属性和值
           // console.log('Property:', decl.prop, 'Value:', decl.value);
           // if(selector) {
@@ -63,4 +63,19 @@ export const getCSSAST = (css: string) => {
   const csssNodes = res.nodes[0].nodes;
   //  const propList = csssNodes.map((res: any)=> res.prop)
   return csssNodes;
+}
+
+const matchedValue = (value: string) => {
+  const regexPattern = /var\(\s*--([a-zA-Z0-9-]+)\s*\)/;
+  const [, matchedValue] = value.match(regexPattern) || [];
+  return matchedValue
+}
+export function getCssValue(value: string, cssMap: Record<string, string>): string {
+  const realValue = `${matchedValue(value) ? cssMap[`--${matchedValue(value)}`] : value}`;
+
+  if(!matchedValue(realValue)) {
+    console.log(realValue ,'??')
+    return realValue
+  } 
+  return getCssValue(realValue, cssMap);
 }
