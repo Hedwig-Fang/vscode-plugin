@@ -1,41 +1,62 @@
 import * as vscode from 'vscode';
 import path = require('path');
 import fs = require('fs');
-import { getCSSAST, getCssValue } from './parseCss';
-import { getFullFilePath } from './utils'
+import { getCSSAST, getCssValue, getNewCSSAST } from './parseCss';
+import { getFullFilePath } from './utils';
+// import vueParser = require('@vue/compiler-dom');
 // import postcss = require('postcss');
 interface IItem {
   prop: string;
   value: string;
+}
+interface GItem {
+  selector: string;
+  node: IItem[];
 }
 interface IMap {
   [key:string]: string
 }
 const cssMap:IMap = {};
 
-function setCss(selectedFolder: string, context: vscode.ExtensionContext, ASTFun = getCSSAST) {
+function setGlobCss(path: string, context: vscode.ExtensionContext) {
+  const fileContent = fs.readFileSync(path, 'utf-8');
+  const list = getNewCSSAST(fileContent);
+  const provider = vscode.languages.registerCompletionItemProvider(
+    ['vue', 'css', 'less', 'scss'],
+    new GlobCompletionItemProvider(list),
+    '.'
+  );
+  context.subscriptions.push(provider);
+}
+
+function setCss(selectedFolder: string, context: vscode.ExtensionContext) {
   // 读取文件夹中的所有文件
   const files = getFilesInDirectory(selectedFolder);
+  let list: IItem[] = [];
   for (const file of files) {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const fileContent = fs.readFileSync(file, 'utf-8');
+    try {
+      getCSSAST(fileContent).forEach((item: IItem)=> {
+      Reflect.set(cssMap, item.prop, item.value);
+    })
 
-      const list = ASTFun(fileContent);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      list.forEach((item: any)=> {
-        Reflect.set(cssMap, item.prop, item.value);
-      })
-      const provider = vscode.languages.registerCompletionItemProvider(
-        ['vue', 'css', 'less', 'scss'],
-        new CustomCompletionItemProvider(list),
-        '--'
-      );
+    list = [...list, ...getCSSAST(fileContent)];
+    // eslint-disable-next-line no-empty
+    } catch (error) {
+      
+    }
 
+    }
+    const uniqueList = [...new Set(list.map(item => item.prop))].map(prop => list.find(item => item.prop === prop)) as IItem[];
+    const provider = vscode.languages.registerCompletionItemProvider(
+      'vue',
+      new CustomCompletionItemProvider(uniqueList),
+      '--'
+    );
       context.subscriptions.push(provider);
-
-
-  }
 }
+
 
 export function activate(context: vscode.ExtensionContext) {
   // 获取当前工作区的配置
@@ -49,7 +70,7 @@ export function activate(context: vscode.ExtensionContext) {
   const globCssList: string[] = config.get('globalsCss') || [];
   globCssList.forEach((res) => {
     const path = getFullFilePath(res) || '';
-    setCss(path, context)
+    setGlobCss(path, context)
   })
   const disposable = vscode.commands.registerCommand('vscode-plugin-demo.测试一下', async () => {
     const currentMainPath = vscode.workspace.workspaceFolders?.map(res => res.uri.path
@@ -124,6 +145,38 @@ class CustomCompletionItemProvider implements vscode.CompletionItemProvider {
   }
 }
 
+class GlobCompletionItemProvider implements vscode.CompletionItemProvider {
+  // 在这里定义你的数组
+  private items: GItem[];
+  
+  constructor(items: GItem[]) {
+    this.items = items;
+  }
+  provideCompletionItems(
+    // document: vscode.TextDocument,
+    // position: vscode.Position
+  ): vscode.CompletionItem[] | Thenable<vscode.CompletionItem[]> {
+    // 获取当前行的文本
+    // const content = document.getText();
+
+    // const ast = vueParser.parse(content);
+    // const children = ast.children
+    // console.log(children)
+    // const linePrefix = document.lineAt(position).text.substr(0, position.character);
+    // 如果当前行以 '--' -开头，提供代码补全ar
+    // if (linePrefix.endsWith('.') || linePrefix.includes('class="')) {
+
+        const items = this.items.map((item: GItem) => {
+          const completionItem = new vscode.CompletionItem(item.selector, vscode.CompletionItemKind.Variable);
+          completionItem.documentation = new vscode.MarkdownString(`${item.selector}: 
+          ${item.node}`);
+          // completionItem.detail = item.node;
+          return completionItem;
+        });
+      return items;
+
+  }
+}
 // This method is called when your extension is deactivated
 
 // export class CodelensProvider implements vscode.CodeLensProvider {
