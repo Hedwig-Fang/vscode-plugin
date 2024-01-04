@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import path = require('path');
 import fs = require('fs');
 import { getCSSAST, getCssValue, getNewCSSAST } from './parseCss';
-import { getFullFilePath } from './utils';
+import { getFullFilePath, findSettingsFile } from './utils';
 // import vueParser = require('@vue/compiler-dom');
 // import postcss = require('postcss');
 interface IItem {
@@ -57,10 +57,39 @@ function setCss(selectedFolder: string, context: vscode.ExtensionContext) {
       context.subscriptions.push(provider);
 }
 
+function getConfiguration(uri?: vscode.Uri) {
+  // 如果传递了 URI，则使用该 URI，否则使用根路径
+  const folderUri = uri || vscode.workspace.workspaceFolders[0]?.uri;
+
+  if (folderUri) {
+      const folderPath = folderUri.fsPath;
+
+      // 查找配置文件路径
+      const configFilePath = path.join(folderPath, '.vscode', 'settings.json');
+
+      // 如果配置文件存在，返回配置，否则递归查找父文件夹的配置
+      if (fs.existsSync(configFilePath)) {
+          return vscode.workspace.getConfiguration('hwPlugin', folderUri);
+      } else {
+          const parentFolderUri = vscode.Uri.file(path.dirname(folderPath));
+          return getConfiguration(parentFolderUri);
+      }
+  }
+
+  return vscode.workspace.getConfiguration('hwPlugin');  // 返回全局配置
+}
 
 export function activate(context: vscode.ExtensionContext) {
   // 获取当前工作区的配置
+  const currentMainPath = vscode.workspace.workspaceFolders?.map(res => res.uri.path
+    )[0];
+
+  //   const url = currentMainPath ? findSettingsFile(currentMainPath): undefined;
+  //   const uri = vscode.Uri.parse(url as unknown as string)
+
+  // const config = getConfiguration();
   const config = vscode.workspace.getConfiguration('hwPlugin');
+
   const localesPaths: string[] = config.get('localesPaths') || [];
   localesPaths.forEach((res) => {
     const path = getFullFilePath(res) || '';
@@ -73,8 +102,7 @@ export function activate(context: vscode.ExtensionContext) {
     setGlobCss(path, context)
   })
   const disposable = vscode.commands.registerCommand('vscode-plugin-demo.测试一下', async () => {
-    const currentMainPath = vscode.workspace.workspaceFolders?.map(res => res.uri.path
-    )[0];
+
     const currentstylePath = `${currentMainPath}/src/style`
 
     const folderPath = await vscode.window
