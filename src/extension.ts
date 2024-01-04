@@ -11,7 +11,7 @@ interface IItem {
 }
 interface GItem {
   selector: string;
-  node: IItem[];
+  nodes: IItem[];
 }
 interface IMap {
   [key:string]: string
@@ -22,7 +22,7 @@ function setGlobCss(path: string, context: vscode.ExtensionContext) {
   const fileContent = fs.readFileSync(path, 'utf-8');
   const list = getNewCSSAST(fileContent);
   const provider = vscode.languages.registerCompletionItemProvider(
-    ['vue', 'css', 'less', 'scss'],
+    'vue',
     new GlobCompletionItemProvider(list),
     '.'
   );
@@ -57,34 +57,8 @@ function setCss(selectedFolder: string, context: vscode.ExtensionContext) {
       context.subscriptions.push(provider);
 }
 
-// function getConfiguration(uri?: vscode.Uri) {
-//   // 如果传递了 URI，则使用该 URI，否则使用根路径
-//   const folderUri = uri || vscode.workspace.workspaceFolders[0]?.uri;
-
-//   if (folderUri) {
-//       const folderPath = folderUri.fsPath;
-
-//       // 查找配置文件路径
-//       const configFilePath = path.join(folderPath, '.vscode', 'settings.json');
-
-//       // 如果配置文件存在，返回配置，否则递归查找父文件夹的配置
-//       if (fs.existsSync(configFilePath)) {
-//           return vscode.workspace.getConfiguration('hwPlugin', folderUri);
-//       } else {
-//           const parentFolderUri = vscode.Uri.file(path.dirname(folderPath));
-//           return getConfiguration(parentFolderUri);
-//       }
-//   }
-
-//   return vscode.workspace.getConfiguration('hwPlugin');  // 返回全局配置
-// }
-
 export function activate(context: vscode.ExtensionContext) {
   // 获取当前工作区的配置
-
-  //   const url = currentMainPath ? findSettingsFile(currentMainPath): undefined;
-
-  // const config = getConfiguration();
   const currentFolder = vscode.workspace.workspaceFolders?.map(res => res.uri.path
     )[0] || ''
   const {
@@ -94,8 +68,6 @@ export function activate(context: vscode.ExtensionContext) {
   let settingsPath: string | undefined;
   if(foler !== currentFolder) {
     const jsonContent = fs.readFileSync(url, 'utf8');
-
-    // Parse the JSON content
     const parsedData = JSON.parse(jsonContent.replace(/,(?=\s*})/, ''));
     config = {
       get: (key: string) => {
@@ -104,14 +76,11 @@ export function activate(context: vscode.ExtensionContext) {
       },
     }
     settingsPath = foler;
-    // config = new Map(Object.entries(parsedData)) as unknown as vscode.WorkspaceConfiguration;
   } else {
     const uri = vscode.Uri.parse(url as unknown as string)
     config = vscode.workspace.getConfiguration('hwPlugin', uri);
     settingsPath = currentFolder;
   }
-
-
 
   const localesPaths: string[] = config.get('localesPaths') || [];
   localesPaths.forEach((res) => {
@@ -213,16 +182,20 @@ class GlobCompletionItemProvider implements vscode.CompletionItemProvider {
     // const content = document.getText();
 
     // const ast = vueParser.parse(content);
-    // const children = ast.children
+    // const children = ast.children;
     // console.log(children)
     // const linePrefix = document.lineAt(position).text.substr(0, position.character);
     // 如果当前行以 '--' -开头，提供代码补全ar
-    // if (linePrefix.endsWith('.') || linePrefix.includes('class="')) {
 
         const items = this.items.map((item: GItem) => {
-          const completionItem = new vscode.CompletionItem(item.selector, vscode.CompletionItemKind.Variable);
-          completionItem.documentation = new vscode.MarkdownString(`${item.selector}: 
-          ${item.node}`);
+          const {nodes, selector} = item || {};
+          const nodeContent = nodes.map((res: IItem)=> {
+            const {prop, value} = res || {};
+            return `${prop}: ${value}`
+        }).join('\t')
+          const completionItem = new vscode.CompletionItem(selector.replace('.', ''), vscode.CompletionItemKind.Variable);
+          completionItem.documentation = new vscode.MarkdownString(`${selector.replace('.', '')}: 
+          ${nodeContent}`);
           // completionItem.detail = item.node;
           return completionItem;
         });
