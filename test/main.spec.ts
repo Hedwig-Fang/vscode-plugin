@@ -126,6 +126,7 @@ const mockRes =[
   '--primary-9',
   '--primary-10'
 ]
+const str = '.';
 test('init', ()=> {
  // eslint-disable-next-line @typescript-eslint/no-explicit-any
  const res =  getCSSAST(cssTest) as any;
@@ -138,14 +139,22 @@ test('init', ()=> {
 })
 test.only('第二次', ()=>{
   const res = getNewCSSAST(cssTest) as any;
-  console.log(res)
+  res.forEach((_res)=> {
+    const {nodes, selector} = _res;
+    
+    nodes.map(res=> {
+      const {prop, value} = res || {};
+      return `${prop}: ${value}`
+  }).join('\t')
+    console.log(_res.selector, _res.nodes)
+  })
 })
 const cssMap = {
   '--a': 'var( --b)',
   '--b': 'var( --c)',
   '--c': '2322'
 }
-test.only('测试', () => {
+test('测试', () => {
  const res = getCssValue('var(--a)', cssMap)
  console.log(res, 'aaa')
 })

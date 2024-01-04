@@ -2,7 +2,6 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
 
-const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
 
 function hasSeetingsFile(folderPath: string) {
   // 检查文件夹中是否存在 settings.json 文件
@@ -11,13 +10,19 @@ function hasSeetingsFile(folderPath: string) {
 }
 export function findSettingsFile(folderPath: string) {
   if(hasSeetingsFile(folderPath)) {
-    return folderPath;
+    return {
+      folder: folderPath,
+      url: path.join(folderPath as unknown as string,'.vscode', 'settings.json')
+    };
   }
   let currentPath = folderPath;
   while (currentPath) {
     const settingsFilePath = path.join(currentPath, '.vscode', 'settings.json');
     if (fs.existsSync(settingsFilePath)) {
-        return settingsFilePath;
+        return  {
+          foler: currentPath,
+          url:settingsFilePath
+        };
     }
 
     const parentPath = path.dirname(currentPath);
@@ -28,15 +33,20 @@ export function findSettingsFile(folderPath: string) {
 
     currentPath = parentPath;
 }
-return null
+return {
+  foler: '',
+  url: ''
+}
 
 }
-export function getFullFilePath(relativePath: string): string | undefined {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function getFullFilePath(relativePath: string, fsPath: any): string | undefined {
   // 获取当前打开的工作区文件夹
+// const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
 
-  if (workspaceFolder) {
+  if (fsPath) {
       // 使用 path.join() 将相对路径连接到工作区文件夹路径
-      const fullPath = path.join(workspaceFolder.uri.fsPath, relativePath);
+      const fullPath = path.join(fsPath, relativePath);
       return fullPath;
   }
 
