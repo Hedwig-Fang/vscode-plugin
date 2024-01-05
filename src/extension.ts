@@ -62,11 +62,11 @@ export function activate(context: vscode.ExtensionContext) {
   const currentFolder = vscode.workspace.workspaceFolders?.map(res => res.uri.path
     )[0] || ''
   const {
-    foler, url
+    folder, url
   } = findSettingsFile(currentFolder);
   let config;
   let settingsPath: string | undefined;
-  if(foler !== currentFolder) {
+  if(folder !== currentFolder) {
     const jsonContent = fs.readFileSync(url, 'utf8');
     const parsedData = JSON.parse(jsonContent.replace(/,(?=\s*})/, ''));
     config = {
@@ -75,7 +75,7 @@ export function activate(context: vscode.ExtensionContext) {
        return parsedData[realKey]
       },
     }
-    settingsPath = foler;
+    settingsPath = folder;
   } else {
     const uri = vscode.Uri.parse(url as unknown as string)
     config = vscode.workspace.getConfiguration('hwPlugin', uri);

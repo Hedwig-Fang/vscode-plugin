@@ -20,7 +20,7 @@ export function findSettingsFile(folderPath: string) {
     const settingsFilePath = path.join(currentPath, '.vscode', 'settings.json');
     if (fs.existsSync(settingsFilePath)) {
         return  {
-          foler: currentPath,
+          folder: currentPath,
           url:settingsFilePath
         };
     }
