@@ -1,9 +1,8 @@
 import * as vscode from 'vscode';
 import path = require('path');
 import fs = require('fs');
-import { getCSSAST, getCssValue, getNewCSSAST } from './parseCss';
+import { getCSSAST, getCssValue, getNewCSSAST, parseVue } from './parseCss';
 import { getFullFilePath, findSettingsFile } from './utils';
-// import vueParser = require('@vue/compiler-dom');
 // import postcss = require('postcss');
 interface IItem {
   prop: string;
@@ -13,6 +12,7 @@ interface GItem {
   selector: string;
   nodes: IItem[];
 }
+
 interface IMap {
   [key:string]: string
 }
@@ -57,7 +57,17 @@ function setCss(selectedFolder: string, context: vscode.ExtensionContext) {
       context.subscriptions.push(provider);
 }
 
+ function setCurrentHtml(context: vscode.ExtensionContext) {
+  const provider = vscode.languages.registerCompletionItemProvider(
+    'vue',
+    new UserClassCompletionItemProvider(),
+    '--'
+  );
+    context.subscriptions.push(provider);
+
+ }
 export function activate(context: vscode.ExtensionContext) {
+  setCurrentHtml(context)
   // 获取当前工作区的配置
   const currentFolder = vscode.workspace.workspaceFolders?.map(res => res.uri.fsPath
     )[0] || ''
@@ -176,6 +186,25 @@ class CustomCompletionItemProvider implements vscode.CompletionItemProvider {
   }
 }
 
+class UserClassCompletionItemProvider implements vscode.CompletionItemProvider {
+  // 在这里定义你的数组
+  // private items: string[];
+  
+  // constructor(items: string[]) {
+  //   this.items = items;
+  // }
+  provideCompletionItems(
+    document: vscode.TextDocument,
+    ): vscode.CompletionItem[] | Thenable<vscode.CompletionItem[]> {
+    const content = document.getText();
+    const classList = parseVue(content) as string[];
+    const items =  classList.map((item: string) => {
+      const completionItem = new vscode.CompletionItem(item, vscode.CompletionItemKind.Class);
+      return completionItem;
+    });
+    return items
+    }
+  }
 class GlobCompletionItemProvider implements vscode.CompletionItemProvider {
   // 在这里定义你的数组
   private items: GItem[];

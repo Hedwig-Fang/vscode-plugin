@@ -1,4 +1,6 @@
-import postcss = require("postcss");
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import postcss  from 'postcss';
+import { parse} from '@vue/compiler-dom';
 
 export const getNewCSSAST = (css: string) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -47,4 +49,29 @@ export function getCssValue(value: string, cssMap: Record<string, string>): stri
     return realValue
   } 
   return getCssValue(realValue, cssMap);
+}
+
+function traverseTemplateNode(node: any, classNameList: any[]) {
+
+  if (node.props && node.props.length && node.props.find((prop: any) => prop.name === 'class')
+  ){
+  const classNameStr = node.props.find((prop: any) => prop.name === 'class').value.content;
+  const classNameArr = classNameStr.split(' ');
+  classNameList.push(...classNameArr);
+  }
+  if (node.children) {
+    // 递归遍历子节点
+    node.children.forEach((item: any)=>{
+      traverseTemplateNode(item, classNameList);
+    });
+  }
+  return classNameList;
+
+}
+export function parseVue(content: string): string[] {
+const res =parse(content);
+const {children} = res;
+const template = children.find((item: any) => item.tag === 'template') as any;
+const classNameList = traverseTemplateNode(template, []);
+return classNameList
 }

@@ -2,7 +2,7 @@
   "name": "hwPlugin",
   "displayName": "红瓦前端插件合集",
   "description": "一个vue3的代码片段",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "publisher": "hedwigFang",
   "icon": "Covertest.png",
   "engines": {
