@@ -59,16 +59,22 @@ function setCss(selectedFolder: string, context: vscode.ExtensionContext) {
 
 export function activate(context: vscode.ExtensionContext) {
   // 获取当前工作区的配置
-  const currentFolder = vscode.workspace.workspaceFolders?.map(res => res.uri.path
+  const currentFolder = vscode.workspace.workspaceFolders?.map(res => res.uri.fsPath
     )[0] || ''
   const {
     folder, url
   } = findSettingsFile(currentFolder);
+
   let config;
   let settingsPath: string | undefined;
-  if(folder !== currentFolder) {
+  if(folder && folder !== currentFolder) {
     const jsonContent = fs.readFileSync(url, 'utf8');
-    const parsedData = JSON.parse(jsonContent.replace(/,(?=\s*})/, ''));
+    let parsedData: any;
+    try {
+       parsedData = JSON.parse(jsonContent.replace(/,(?=\s*})/, ''));
+    } catch (error) {
+      vscode.window.showErrorMessage('配置文件解析失败');
+    }
     config = {
       get: (key: string) => {
         const realKey =  `hwPlugin.${key}`
@@ -76,15 +82,22 @@ export function activate(context: vscode.ExtensionContext) {
       },
     }
     settingsPath = folder;
-  } else {
-    const uri = vscode.Uri.parse(url as unknown as string)
+  } else if(url) {
+    const uri =  vscode.Uri.parse(url as unknown as string);
     config = vscode.workspace.getConfiguration('hwPlugin', uri);
     settingsPath = currentFolder;
+  } else {
+    vscode.window.showInformationMessage('当前工作区没有配置文件,请使用 测试一下入口选择手动路径');
+    return
   }
 
   const localesPaths: string[] = config.get('localesPaths') || [];
+
   localesPaths.forEach((res) => {
+  vscode.window.showInformationMessage(`settingsPath:${settingsPath}`);
     const path = getFullFilePath(res, settingsPath) || '';
+  vscode.window.showInformationMessage(`获取到localesPath:${path}`);
+
     setCss(path, context)
 
   })
@@ -94,18 +107,14 @@ export function activate(context: vscode.ExtensionContext) {
     setGlobCss(path, context)
   })
   const disposable = vscode.commands.registerCommand('vscode-plugin-demo.测试一下', async () => {
-    const currentMainPath = vscode.workspace.workspaceFolders?.map(res => res.uri.path
-      )[0];
   
-    const currentstylePath = `${currentMainPath}/src/style`
-
     const folderPath = await vscode.window
       .showOpenDialog({
         // 可选对象
         canSelectFiles: false,
         canSelectFolders: true,
         canSelectMany: false, // 是否可以选择多个
-        defaultUri: vscode.Uri.file(currentstylePath), // 默认打开本地路径
+        defaultUri: vscode.Uri.file(currentFolder), // 默认打开本地路径
         openLabel: "选择默认样式入口文件",
       })
     if (folderPath && folderPath.length > 0) {

@@ -15,7 +15,8 @@
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src --ext ts",
     "test": "vitest --run",
-    "publish": "vsce publish"
+    "publish": "vsce publish",
+    "package": "vsce package"
   },
   "devDependencies": {
     "@types/chai": "^4.3.11",

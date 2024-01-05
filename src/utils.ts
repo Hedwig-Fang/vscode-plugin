@@ -12,12 +12,16 @@ export function findSettingsFile(folderPath: string) {
   if(hasSeetingsFile(folderPath)) {
     return {
       folder: folderPath,
+      // url: path.join(folderPath as unknown as string, 'hwplugin.json')
       url: path.join(folderPath as unknown as string,'.vscode', 'settings.json')
+
     };
   }
   let currentPath = folderPath;
   while (currentPath) {
+    // const settingsFilePath = path.join(currentPath, 'hwplugin.json');
     const settingsFilePath = path.join(currentPath, '.vscode', 'settings.json');
+
     if (fs.existsSync(settingsFilePath)) {
         return  {
           folder: currentPath,
@@ -34,8 +38,8 @@ export function findSettingsFile(folderPath: string) {
     currentPath = parentPath;
 }
 return {
-  foler: '',
-  url: ''
+  folder: undefined,
+  url: undefined
 }
 
 }
