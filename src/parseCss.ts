@@ -55,9 +55,14 @@ function traverseTemplateNode(node: any, classNameList: any[]) {
 
   if (node.props && node.props.length && node.props.find((prop: any) => prop.name === 'class')
   ){
-  const classNameStr = node.props.find((prop: any) => prop.name === 'class').value.content;
-  const classNameArr = classNameStr.split(' ');
-  classNameList.push(...classNameArr);
+    const classNameStr = node.props.find((prop: any) => prop.name === 'class').value.content;
+    const classNameArr = classNameStr.split(' ') as string[];
+    classNameArr.forEach((className: string)=>{
+      if(!classNameList.includes(className)) {
+        classNameList.push(className)
+      }
+    })
+
   }
   if (node.children) {
     // 递归遍历子节点
