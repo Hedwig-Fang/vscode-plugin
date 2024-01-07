@@ -1,18 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import postcss  from 'postcss';
-import { parse} from '@vue/compiler-dom';
+import postcss from 'postcss';
+import { parse,ElementNode} from '@vue/compiler-dom';
 
-export const getNewCSSAST = (css: string) => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const res = postcss.parse(css) as any;
-  const csssNodes = res.nodes;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return csssNodes.map((res: any)=> {
+
+export const getCssClassNameAST = (css: string) => {
+  const res = postcss.parse(css);
+  const csssNodes = res.nodes as any;
+  return csssNodes.map((res: { nodes: any; selector: any; })=> {
     const {nodes, selector} = res;
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
-    const realNodes = nodes.map((res: any)=> {
+    const realNodes = nodes.map((res: { prop: any; value: any; })=> {
       const {prop, value} = res;
-
       return {
         prop,
         value
@@ -27,10 +24,8 @@ export const getNewCSSAST = (css: string) => {
 }
 // 先写死 因为结构都是一样的 后面再优化
 export const getCSSAST = (css: string) => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const res = postcss.parse(css) as any;
   const csssNodes = res.nodes[0].nodes;
-  //  const propList = csssNodes.map((res: any)=> res.prop)
   if(Array.isArray(csssNodes)){
     return csssNodes;
   }
@@ -47,7 +42,7 @@ export function getCssValue(value: string, cssMap: Record<string, string>): stri
 
   if(!matchedValue(realValue)) {
     return realValue
-  } 
+  }
   return getCssValue(realValue, cssMap);
 }
 
@@ -73,10 +68,11 @@ function traverseTemplateNode(node: any, classNameList: any[]) {
   return classNameList;
 
 }
+
 export function parseVue(content: string): string[] {
-const res =parse(content);
-const {children} = res;
-const template = children.find((item: any) => item.tag === 'template') as any;
+const res = parse(content) as any;
+const { children } = res;
+const template = children.find((item: ElementNode) => item.tag === 'template');
 const classNameList = traverseTemplateNode(template, []);
 return classNameList
 }

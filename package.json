@@ -19,6 +19,7 @@
     "package": "vsce package"
   },
   "devDependencies": {
+    "@babel/types": "^7.23.6",
     "@types/chai": "^4.3.11",
     "@types/glob": "^7.2.0",
     "@types/mocha": "^9.1.0",
@@ -28,6 +29,7 @@
     "@typescript-eslint/eslint-plugin": "^6.14.0",
     "@typescript-eslint/parser": "^6.14.0",
     "@vscode/test-electron": "^2.1.2",
+    "axios": "^1.6.5",
     "chai": "^4.3.10",
     "eslint": "^8.9.0",
     "glob": "^7.2.0",
@@ -35,6 +37,7 @@
     "nanoid": "^3.3.7",
     "picocolors": "^1.0.0",
     "source-map-js": "^1.0.2",
+    "svg2img": "^1.0.0-beta.2",
     "typescript": "^4.5.5",
     "vitest": "^1.0.4"
   },
@@ -51,7 +54,11 @@
       {
         "command": "vscode-plugin-demo.测试一下",
         "title": "测试一下"
-      }
+      },
+			{
+				"command": "vscode-plugin-demo.iconfont",
+				"title": "iconfont"
+			}
     ],
     "languages": [
       {
