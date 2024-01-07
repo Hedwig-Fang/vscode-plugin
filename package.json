@@ -46,8 +46,19 @@
   ],
   "activationEvents": [
     "onCommand:vue-auto-atomic-css",
-    "onLanguage:vue"
+    "onLanguage:vue",
+    "onView:hwPlugin.iconfont"
+
   ],
+	"views": {
+    "explorer": [
+        {
+            "type": "webview",
+            "id": "hwPlugin.iconfont",
+            "name": "iconfont"
+        }
+    ]
+	},
   "main": "./out/extension.js",
   "contributes": {
     "commands": [

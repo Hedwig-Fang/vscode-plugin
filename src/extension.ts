@@ -75,22 +75,36 @@ function setCssVar(selectedFolder: string, context: vscode.ExtensionContext) {
 
  }
 
- async function getCustomContent() {
+ async function getCustomContent(context: vscode.ExtensionContext) {
 	const list = await getIconFontData() as IIconArray
+	function copy(item: { font_class: string; }) {
+		console.log('触发了吗')
+		// const content = `icon-${item.font_class}`
+		// log.appendLine(content + '复制成功')
+		// vscode.env.clipboard.writeText(content);
+	}
+	// <a style="cursor: pointer;margin-right: 4px;" onclick="copy">复制</a>
 
+	// function collect(item: { font_class: any; show_svg?: string; }) {
+	// 	context.globalState.update('iconSave', [...(context.globalState.get('iconSave') as IIconArray), item]);
+	// }
 	// 返回自定义的 HTML 内容
 	return `
 			<html>
+			<script>
+			${copy}
+			</script>
 			<body>
-					<h1>icon font快速查找</h1>
+					<h1>iconfont快速查找</h1>
+
 					${list.map(item => {
 						return (`
-						<li>
+						<li style="height: 32px; list-style-type: none;">
 						<span>icon-${item.font_class}<span>
 						${item.show_svg}
 						</li>
 						`)
-					}) }
+					}).join('') }
 			</body>
 			</html>
 	`;
@@ -107,19 +121,24 @@ function setCssVar(selectedFolder: string, context: vscode.ExtensionContext) {
 
 	context.subscriptions.push(provider);
  }
+
 export function activate(context: vscode.ExtensionContext) {
+
+// 将 Action Label 添加到状态栏
 	    // 注册命令
 			const disposable2 = vscode.commands.registerCommand('vscode-plugin-demo.iconfont', () => {
         // 创建 WebviewPanel
         const panel = vscode.window.createWebviewPanel(
-            'customContent', // 标识符，唯一标识 WebviewPanel 实例
-            'Custom Content', // 面板标题
+            'hwPlugin.iconfont', // 标识符，唯一标识 WebviewPanel 实例
+            'iconfont', // 面板标题
             vscode.ViewColumn.One, // 显示在编辑器的位置
-            {}
+						{
+							enableScripts: true // 允许脚本执行
+					}
         );
 
         // 获取 Webview 内容
-        getCustomContent().then(res=> {
+        getCustomContent(context).then(res=> {
 					const content = res;
 					panel.webview.html = content;
 
@@ -251,7 +270,10 @@ class IconfontCompletionItemProvide implements vscode.CompletionItemProvider {
   constructor(items: IIconArray) {
     this.items = items;
   }
-	provideCompletionItems() {
+	provideCompletionItems(
+    document: vscode.TextDocument,
+		position: vscode.Position,
+	) {
 
 
 		log.appendLine(this.items+ 'svg' )
@@ -261,7 +283,8 @@ class IconfontCompletionItemProvide implements vscode.CompletionItemProvider {
 			const {font_class, show_svg} = i;
 			const completionItem = new vscode.CompletionItem(`icon-${font_class}`, vscode.CompletionItemKind.Variable);
 			const imgSrc = `data:image/svg+xml;utf8,${encodeURIComponent(show_svg)}`;
-			const imgElement = `<img src="${imgSrc}" alt="SVG Image" width="50" height="50"/>`;
+			const imgElement =         `<p align="center" background-color:#fff;><img height="64" src="${imgSrc}" ></p>
+        <p align="center">icon-${font_class}</p>`
 
 			const markdownString = new vscode.MarkdownString(`${imgElement}`);
 
@@ -271,7 +294,7 @@ class IconfontCompletionItemProvide implements vscode.CompletionItemProvider {
 
 			completionItem.insertText = `icon-${font_class}`.replace('.', '')
 
-			return completionItem
+			return removePrefix(completionItem, position)
 		})
 		log.appendLine(items+ '获取到icon列表')
 
@@ -301,6 +324,12 @@ class UserClassCompletionItemProvider implements vscode.CompletionItemProvider {
     return items
     }
   }
+	// todo 位置写死是1了 后续可改成动态获取前缀
+	function removePrefix(completionItem: vscode.CompletionItem,position: vscode.Position): vscode.CompletionItem {
+		const rangeToRemove = new vscode.Range(position.line, position.character-1, position.line, position.character);
+		completionItem.additionalTextEdits = [vscode.TextEdit.delete(rangeToRemove)];
+		return completionItem
+	}
 class GlobClassNameCompletionItemProvider implements vscode.CompletionItemProvider {
   // 在这里定义你的数组
   private items: GItem[];
@@ -335,11 +364,10 @@ class GlobClassNameCompletionItemProvider implements vscode.CompletionItemProvid
           const completionItem = new vscode.CompletionItem(tipSelector, vscode.CompletionItemKind.Variable);
           completionItem.documentation = new vscode.MarkdownString(`${tipSelector}:
           ${nodeContent}`);
-				completionItem.insertText = new vscode.SnippetString('${1:' + tipSelector + '}');
-				const rangeToRemove = new vscode.Range(position.line, position.character-1, position.line, position.character);
-				completionItem.additionalTextEdits = [vscode.TextEdit.delete(rangeToRemove)];
+				completionItem.insertText = new vscode.SnippetString(tipSelector);
+
           // completionItem.detail = item.node;
-          return completionItem;
+          return removePrefix(completionItem, position);
         });
 			log.appendLine(`获取到了globalCss`);
 
